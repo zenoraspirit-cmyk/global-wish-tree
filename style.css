@@ -1,0 +1,85 @@
+body, html {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    background-color: #000;
+    font-family: 'Arial', sans-serif;
+    overflow: hidden; /* Prevent scrolling entirely as requested */
+}
+
+/* Background fixed and stretched to cover the screen */
+#bg-fixed {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: url('tree.png') no-repeat center center;
+    background-size: cover; /* Stretches to fill the screen */
+    z-index: -1;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+}
+#ui-layer * { pointer-events: auto; }
+
+#search-container {
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 280px;
+}
+#searchInput {
+    width: 100%; padding: 12px;
+    border-radius: 25px; border: 1px solid #D4AF37;
+    background: rgba(0,0,0,0.8); color: #fff;
+    box-sizing: border-box;
+}
+.dropdown-list {
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid #D4AF37;
+    max-height: 200px; overflow-y: auto;
+    display: none; border-radius: 10px; margin-top: 5px;
+}
+.dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; font-size: 13px; color: #D4AF37; }
+
+.wish {
+    position: absolute;
+    padding: 8px 15px; border-radius: 20px;
+    color: #000; font-weight: bold; font-size: 13px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    cursor: help;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(4px, -8px) rotate(0.5deg); }
+    75% { transform: translate(-4px, 4px) rotate(-0.5deg); }
+}
+
+.wish.fulfilled {
+    background: linear-gradient(45deg, #FFD700, #FFF9C4, #FFD700) !important;
+    border: 2px solid #FFF;
+    animation: goldGlow 2s infinite alternate, float var(--speed) infinite ease-in-out !important;
+}
+@keyframes goldGlow { from { box-shadow: 0 0 10px #FFD700; } to { box-shadow: 0 0 25px #FFD700; } }
+
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+.modal-content { background: #111; margin: 10% auto; padding: 25px; width: 85%; max-width: 400px; border: 1px solid #D4AF37; border-radius: 15px; color: white;}
+.modal-content input, .modal-content select, .modal-content textarea { width: 100%; margin: 10px 0; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px; box-sizing: border-box;}
+
+.wish-selector-list { max-height: 150px; overflow-y: auto; margin: 10px 0; border: 1px dashed #D4AF37; background: #000; }
+.selector-item { padding: 10px; font-size: 12px; cursor: pointer; color: #ccc; border-bottom: 1px solid #222; }
+.selector-item.selected { background: #D4AF37; color: #000; font-weight: bold; }
+
+#overlay { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; }
+.button-group { display: flex; gap: 15px; }
+button { padding: 12px 25px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; }
+.primary-btn { background: #D4AF37; color: #000; }
+.secondary-btn { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; }
+.gold-btn { background: linear-gradient(to right, #BF953F, #FCF6BA); color: #000; }
+
+@media (max-width: 600px) {
+    .wish { font-size: 11px; padding: 5px 10px; }
+}
