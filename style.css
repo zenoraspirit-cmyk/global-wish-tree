@@ -1,69 +1,96 @@
 body, html {
-    margin: 0; padding: 0;
-    width: 100%; height: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    background-color: #000;
-    font-family: Arial, sans-serif;
+    background-color: #000; /* 背景图加载前的底色 */
+    font-family: 'Arial', sans-serif;
 }
 
 #container {
-    position: fixed; /* 修正：使用固定定位防止背景移动 */
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    /* 核心修复：确保直接读取同目录下的 tree.png */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: url('tree.png') no-repeat center center;
-    background-size: 100% 100%; /* 强制拉伸铺满全屏 */
-    z-index: -1;
+    background-size: cover;
+    z-index: 1; /* 调高一点，确保在底层显示 */
 }
 
 #wish-display {
     position: absolute;
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
     pointer-events: none;
 }
 
-/* 愿望标签样式 */
 .wish {
     position: absolute;
     padding: 10px 15px;
-    background: rgba(255, 215, 0, 0.2);
-    border: 1px solid rgba(255, 215, 0, 0.5);
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid rgba(255, 215, 0, 0.4);
     border-radius: 20px;
     color: #FFD700;
     font-size: 14px;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     white-space: nowrap;
-    animation: glow 3s infinite ease-in-out;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    animation: floating 4s infinite ease-in-out;
 }
 
-@keyframes glow {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
+@keyframes floating {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-10px) scale(1.05); opacity: 1; }
 }
 
 #overlay {
     position: absolute;
-    bottom: 0; width: 100%;
-    display: flex; justify-content: center;
-    padding-bottom: 50px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    bottom: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 3;
 }
 
 .input-container {
-    width: 90%; max-width: 500px;
-    text-align: center;
+    width: 90%;
+    max-width: 450px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
 }
 
 textarea {
-    width: 100%; height: 80px;
-    background: rgba(0,0,0,0.6);
+    width: 100%;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
     border: 1px solid #D4AF37;
-    color: white; border-radius: 10px;
-    padding: 10px; margin-bottom: 15px;
-    font-size: 16px;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    resize: none;
 }
 
-.button-group { display: flex; gap: 10px; justify-content: center; }
-button { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; }
-.primary-btn { background: #D4AF37; color: black; }
-.secondary-btn { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; }
+.button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+button {
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.primary-btn { background: #D4AF37; color: #000; width: 140px; }
+.secondary-btn { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; width: 140px; }
+button:hover { transform: scale(1.05); opacity: 0.9; }

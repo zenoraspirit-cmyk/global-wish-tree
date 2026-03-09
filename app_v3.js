@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 这是根据你截图 整理的配置
+// Firebase 身份证信息
 const firebaseConfig = {
   apiKey: "AIzaSyB2Tcqf74vURDSFFOpDjJA0eMtIrl3lN-0",
   authDomain: "wish-tree-b8dc9.firebaseapp.com",
@@ -16,32 +16,33 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const wishesArea = document.getElementById("wish-display");
 
-// 许愿并支付
+// 点击“Manifest”按钮：保存愿望并跳转支付 $1
 document.getElementById("manifestBtn").onclick = async () => {
     const text = document.getElementById("wishInput").value;
-    if (!text) return alert("Please write your wish first.");
+    if (!text.trim()) return alert("Please type your wish first.");
+    
     try {
         await addDoc(collection(db, "wishes"), {
             content: text,
             time: new Date(),
-            posX: Math.random() * 80 + 10,
-            posY: Math.random() * 60 + 10
+            posX: Math.random() * 70 + 15,
+            posY: Math.random() * 50 + 15
         });
-        // 自动跳转到你的 PayPal
+        // 跳转到支付 1 美元页面
         window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
     } catch (e) {
-        console.error(e);
-        alert("Submission failed. Check database rules.");
+        console.error("Database Error:", e);
+        alert("Submission failed. Please check Firebase rules.");
     }
 };
 
-// 还愿/捐赠
+// 点击“Fulfill”按钮：跳转到随意金额支付页面
 document.getElementById("gratitudeBtn").onclick = () => {
     window.location.href = "https://www.paypal.me/ZenoraSpirit";
 };
 
-// 实时显示愿望
-onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(50)), (snapshot) => {
+// 实时获取数据库里的愿望并显示
+onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(40)), (snapshot) => {
     wishesArea.innerHTML = "";
     snapshot.forEach(doc => {
         const data = doc.data();
