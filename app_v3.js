@@ -1,14 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 请在此处填入你的 Firebase 配置
 const firebaseConfig = {
-    apiKey: "你的APIKEY",
-    authDomain: "你的AUTHDOMAIN",
-    projectId: "你的PROJECTID",
-    storageBucket: "你的STORAGEBUCKET",
-    messagingSenderId: "你的SENDERID",
-    appId: "你的APPID"
+    apiKey: "在此处填入你的APIKEY",
+    authDomain: "在此处填入你的AUTHDOMAIN",
+    projectId: "在此处填入你的PROJECTID",
+    storageBucket: "在此处填入你的STORAGEBUCKET",
+    messagingSenderId: "在此处填入你的SENDERID",
+    appId: "在此处填入你的APPID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -33,7 +32,7 @@ window.closeModals = () => {
 document.getElementById("openManifestModal").onclick = () => document.getElementById("manifestModal").style.display = "block";
 document.getElementById("openGratitudeModal").onclick = () => document.getElementById("gratitudeModal").style.display = "block";
 
-// 1. 许愿并支付 $1
+// 1. 许愿支付逻辑
 document.getElementById("manifestBtn").onclick = async () => {
     const nick = document.getElementById("nickName").value.trim();
     const cat = document.getElementById("wishCategory").value;
@@ -41,12 +40,11 @@ document.getElementById("manifestBtn").onclick = async () => {
 
     if (!nick || !content) return alert("Please fill in all fields.");
 
-    // 检查重复（不区分大小写）
     const q = query(collection(db, "wishes"), where("nickname_lower", "==", nick.toLowerCase()));
     const snap = await getDocs(q);
-    if (!snap.empty) return alert("This Nickname/Email is already in use.");
+    if (!snap.empty) return alert("This ID is already taken.");
 
-    // 跳转 PayPal 支付
+    // 直接跳转支付
     window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
 
     try {
@@ -59,7 +57,7 @@ document.getElementById("manifestBtn").onclick = async () => {
     } catch (e) { console.error(e); }
 };
 
-// 2. 还愿逻辑
+// 2. 还愿选择逻辑
 document.getElementById("gratitudeIdentity").oninput = async (e) => {
     const val = e.target.value.toLowerCase();
     const list = document.getElementById("user-wishes-to-repay");
@@ -86,7 +84,7 @@ document.getElementById("gratitudeIdentity").oninput = async (e) => {
 
 document.getElementById("gratitudeBtn").onclick = async () => {
     const amount = document.getElementById("gratitudeAmount").value;
-    if (amount < 1) return alert("Minimum payment is $1");
+    if (amount < 1) return alert("Min payment is $1");
     
     if (selectedWishIdToRepay) {
         window.location.href = `https://www.paypal.me/ZenoraSpirit/${amount}`;
@@ -94,7 +92,7 @@ document.getElementById("gratitudeBtn").onclick = async () => {
     }
 };
 
-// 3. 渲染标签
+// 3. 渲染展示
 onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(40)), (snapshot) => {
     allWishes = [];
     snapshot.forEach(doc => allWishes.push({ id: doc.id, ...doc.data() }));
@@ -108,9 +106,6 @@ function renderWishes(wishes) {
         tag.className = "wish " + (data.isFulfilled ? "fulfilled" : "");
         tag.innerText = data.nickname;
         tag.style.backgroundColor = categoryColors[data.category] || "#FFF";
-
-        const status = data.isFulfilled ? "FULFILLED" : "PRAYING...";
-        tag.title = `[${status}]\nDate: ${data.time}\nCategory: ${data.category}\nWish: ${data.content}`;
 
         const speed = (Math.random() * 2 + 3).toFixed(2) + "s";
         tag.style.setProperty('--speed', speed);

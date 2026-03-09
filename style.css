@@ -1,26 +1,23 @@
-/* 基础重置 */
 body, html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
     background-color: #000;
     font-family: 'Arial', sans-serif;
-    overflow: hidden; /* 彻底禁止滚动 */
+    overflow: hidden; /* 禁止页面滚动 */
 }
 
-/* 核心：背景图层 */
+/* 核心：背景全屏拉伸且固定 */
 #bg-fixed {
     position: fixed;
     top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-    /* 使用相对路径 ./ 确保 GitHub Pages 能找到图片 */
+    /* 引用根目录的 tree.png */
     background: url('./tree.png') no-repeat center center;
-    background-size: 100% 100%; /* 强制拉伸铺满全屏，不留黑边 */
+    background-size: 100% 100%; 
     z-index: -1;
-    display: block;
 }
 
-/* UI 容器 */
 #ui-layer {
     position: relative;
     width: 100%; height: 100%;
@@ -29,7 +26,6 @@ body, html {
 }
 #ui-layer * { pointer-events: auto; }
 
-/* 搜索框样式 */
 #search-container {
     position: absolute;
     top: 20px; right: 20px;
@@ -49,7 +45,6 @@ body, html {
 }
 .dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; font-size: 13px; color: #D4AF37; }
 
-/* 许愿标签样式 */
 .wish {
     position: absolute;
     padding: 8px 15px; border-radius: 20px;
@@ -69,9 +64,7 @@ body, html {
     border: 2px solid #FFF;
     animation: goldGlow 2s infinite alternate, float var(--speed) infinite ease-in-out !important;
 }
-@keyframes goldGlow { from { box-shadow: 0 0 10px #FFD700; } to { box-shadow: 0 0 25px #FFD700; } }
 
-/* 弹窗样式 */
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
 .modal-content { background: #111; margin: 10% auto; padding: 25px; width: 85%; max-width: 400px; border: 1px solid #D4AF37; border-radius: 15px; color: white;}
 .modal-content input, .modal-content select, .modal-content textarea { width: 100%; margin: 10px 0; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px; box-sizing: border-box;}
@@ -80,7 +73,6 @@ body, html {
 .selector-item { padding: 10px; font-size: 12px; cursor: pointer; color: #ccc; border-bottom: 1px solid #222; }
 .selector-item.selected { background: #D4AF37; color: #000; font-weight: bold; }
 
-/* 底部按钮 */
 #overlay { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; }
 .button-group { display: flex; gap: 15px; }
 button { padding: 12px 25px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; }
