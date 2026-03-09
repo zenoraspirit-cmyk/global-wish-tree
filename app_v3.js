@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// 请在此处填入你的 Firebase 配置
 const firebaseConfig = {
     apiKey: "你的APIKEY",
     authDomain: "你的AUTHDOMAIN",
@@ -32,20 +33,20 @@ window.closeModals = () => {
 document.getElementById("openManifestModal").onclick = () => document.getElementById("manifestModal").style.display = "block";
 document.getElementById("openGratitudeModal").onclick = () => document.getElementById("gratitudeModal").style.display = "block";
 
-// 1. Manifest (Pay $1)
+// 1. 许愿并支付 $1
 document.getElementById("manifestBtn").onclick = async () => {
     const nick = document.getElementById("nickName").value.trim();
     const cat = document.getElementById("wishCategory").value;
     const content = document.getElementById("wishInput").value.trim();
 
-    if (!nick || !content) return alert("Please enter your details.");
+    if (!nick || !content) return alert("Please fill in all fields.");
 
-    // Check Case-Insensitive Duplicate
+    // 检查重复（不区分大小写）
     const q = query(collection(db, "wishes"), where("nickname_lower", "==", nick.toLowerCase()));
     const snap = await getDocs(q);
-    if (!snap.empty) return alert("This Nickname/Email is already used.");
+    if (!snap.empty) return alert("This Nickname/Email is already in use.");
 
-    // Trigger PayPal Payment
+    // 跳转 PayPal 支付
     window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
 
     try {
@@ -58,7 +59,7 @@ document.getElementById("manifestBtn").onclick = async () => {
     } catch (e) { console.error(e); }
 };
 
-// 2. Fulfill Logic
+// 2. 还愿逻辑
 document.getElementById("gratitudeIdentity").oninput = async (e) => {
     const val = e.target.value.toLowerCase();
     const list = document.getElementById("user-wishes-to-repay");
@@ -85,7 +86,7 @@ document.getElementById("gratitudeIdentity").oninput = async (e) => {
 
 document.getElementById("gratitudeBtn").onclick = async () => {
     const amount = document.getElementById("gratitudeAmount").value;
-    if (amount < 1) return alert("Min payment is $1");
+    if (amount < 1) return alert("Minimum payment is $1");
     
     if (selectedWishIdToRepay) {
         window.location.href = `https://www.paypal.me/ZenoraSpirit/${amount}`;
@@ -93,7 +94,7 @@ document.getElementById("gratitudeBtn").onclick = async () => {
     }
 };
 
-// 3. Render
+// 3. 渲染标签
 onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(40)), (snapshot) => {
     allWishes = [];
     snapshot.forEach(doc => allWishes.push({ id: doc.id, ...doc.data() }));
@@ -121,7 +122,7 @@ function renderWishes(wishes) {
     });
 }
 
-// 4. Search
+// 4. 搜索
 document.getElementById("searchInput").oninput = (e) => {
     const term = e.target.value.toLowerCase();
     const dropdown = document.getElementById("search-results");
