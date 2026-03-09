@@ -1,25 +1,25 @@
-/* 基础重置，确保全屏显示 */
 body, html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
     overflow: hidden;
     background-color: #000;
+    font-family: Arial, sans-serif;
 }
 
 #container {
-    position: fixed; /* 锁定背景不随页面滚动 */
+    position: fixed; /* 修正：使用固定定位防止背景移动 */
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    /* 核心修正：确保图片引用路径正确且不重复叠加 */
+    /* 核心修复：确保直接读取同目录下的 tree.png */
     background: url('tree.png') no-repeat center center;
-    background-size: 100% 100%; /* 强制拉伸至全屏高度和宽度 */
+    background-size: 100% 100%; /* 强制拉伸铺满全屏 */
     z-index: -1;
 }
 
 #wish-display {
     position: absolute;
     width: 100%; height: 100%;
-    pointer-events: none; /* 让标签层不遮挡底部的输入框点击 */
+    pointer-events: none;
 }
 
 /* 愿望标签样式 */
@@ -41,7 +41,6 @@ body, html {
     50% { opacity: 1; transform: scale(1.05); }
 }
 
-/* 底部输入区域 */
 #overlay {
     position: absolute;
     bottom: 0; width: 100%;
@@ -53,7 +52,6 @@ body, html {
 .input-container {
     width: 90%; max-width: 500px;
     text-align: center;
-    pointer-events: auto;
 }
 
 textarea {
@@ -63,12 +61,9 @@ textarea {
     color: white; border-radius: 10px;
     padding: 10px; margin-bottom: 15px;
     font-size: 16px;
-    box-sizing: border-box;
 }
 
 .button-group { display: flex; gap: 10px; justify-content: center; }
-button {
-    padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold;
-}
+button { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; }
 .primary-btn { background: #D4AF37; color: black; }
 .secondary-btn { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; }

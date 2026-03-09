@@ -1,14 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// !!! 请在这里替换为您真实的 Firebase 配置 !!!
+// Firebase 配置
 const firebaseConfig = {
-    apiKey: "在此填入你的APIKEY",
-    authDomain: "在此填入你的AUTHDOMAIN",
-    projectId: "在此填入你的PROJECTID",
-    storageBucket: "在此填入你的STORAGEBUCKET",
-    messagingSenderId: "在此填入你的SENDERID",
-    appId: "在此填入你的APPID"
+    apiKey: "你的APIKEY",
+    authDomain: "你的AUTHDOMAIN",
+    projectId: "你的PROJECTID",
+    storageBucket: "你的STORAGEBUCKET",
+    messagingSenderId: "你的SENDERID",
+    appId: "你的APPID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -17,8 +17,8 @@ const wishesArea = document.getElementById("wish-display");
 
 // 1. 提交许愿逻辑
 document.getElementById("manifestBtn").onclick = async () => {
-    const text = document.getElementById("wishInput").value.trim();
-    if (!text) return alert("写下你的愿望再点击吧。");
+    const text = document.getElementById("wishInput").value;
+    if (!text) return alert("Please write your wish first.");
 
     try {
         await addDoc(collection(db, "wishes"), {
@@ -27,12 +27,8 @@ document.getElementById("manifestBtn").onclick = async () => {
             posX: Math.random() * 80 + 10,
             posY: Math.random() * 60 + 10
         });
-        // 成功保存后跳转支付
         window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
-    } catch (e) { 
-        console.error("Error: ", e);
-        alert("保存失败，请检查 Firebase 配置。");
-    }
+    } catch (e) { console.error("Error: ", e); }
 };
 
 // 2. 提交还愿逻辑
@@ -40,7 +36,7 @@ document.getElementById("gratitudeBtn").onclick = () => {
     window.location.href = "https://www.paypal.me/ZenoraSpirit";
 };
 
-// 3. 实时加载展示逻辑
+// 3. 实时加载展示
 onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(50)), (snapshot) => {
     wishesArea.innerHTML = "";
     snapshot.forEach(doc => {
