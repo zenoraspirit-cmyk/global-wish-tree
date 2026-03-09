@@ -1,86 +1,74 @@
+/* 基础重置，确保全屏显示 */
 body, html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
+    overflow: hidden;
     background-color: #000;
-    font-family: 'Arial', sans-serif;
-    overflow: hidden; /* 禁止页面滚动 */
 }
 
-/* 核心：背景全屏拉伸且固定 */
-#bg-fixed {
-    position: fixed;
+#container {
+    position: fixed; /* 锁定背景不随页面滚动 */
     top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    /* 引用根目录的 tree.png */
-    background: url('./tree.png') no-repeat center center;
-    background-size: 100% 100%; 
+    width: 100vw; height: 100vh;
+    /* 核心修正：确保图片引用路径正确且不重复叠加 */
+    background: url('tree.png') no-repeat center center;
+    background-size: 100% 100%; /* 强制拉伸至全屏高度和宽度 */
     z-index: -1;
 }
 
-#ui-layer {
-    position: relative;
-    width: 100%; height: 100%;
-    z-index: 10;
-    pointer-events: none;
-}
-#ui-layer * { pointer-events: auto; }
-
-#search-container {
+#wish-display {
     position: absolute;
-    top: 20px; right: 20px;
-    width: 280px;
+    width: 100%; height: 100%;
+    pointer-events: none; /* 让标签层不遮挡底部的输入框点击 */
 }
-#searchInput {
-    width: 100%; padding: 12px;
-    border-radius: 25px; border: 1px solid #D4AF37;
-    background: rgba(0,0,0,0.8); color: #fff;
-    box-sizing: border-box;
-}
-.dropdown-list {
-    background: rgba(15, 15, 15, 0.95);
-    border: 1px solid #D4AF37;
-    max-height: 200px; overflow-y: auto;
-    display: none; border-radius: 10px; margin-top: 5px;
-}
-.dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; font-size: 13px; color: #D4AF37; }
 
+/* 愿望标签样式 */
 .wish {
     position: absolute;
-    padding: 8px 15px; border-radius: 20px;
-    color: #000; font-weight: bold; font-size: 13px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    padding: 10px 15px;
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    border-radius: 20px;
+    color: #FFD700;
+    font-size: 14px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
     white-space: nowrap;
+    animation: glow 3s infinite ease-in-out;
 }
 
-@keyframes float {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(4px, -8px) rotate(0.5deg); }
-    75% { transform: translate(-4px, 4px) rotate(-0.5deg); }
+@keyframes glow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
 }
 
-.wish.fulfilled {
-    background: linear-gradient(45deg, #FFD700, #FFF9C4, #FFD700) !important;
-    border: 2px solid #FFF;
-    animation: goldGlow 2s infinite alternate, float var(--speed) infinite ease-in-out !important;
+/* 底部输入区域 */
+#overlay {
+    position: absolute;
+    bottom: 0; width: 100%;
+    display: flex; justify-content: center;
+    padding-bottom: 50px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
 }
 
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-.modal-content { background: #111; margin: 10% auto; padding: 25px; width: 85%; max-width: 400px; border: 1px solid #D4AF37; border-radius: 15px; color: white;}
-.modal-content input, .modal-content select, .modal-content textarea { width: 100%; margin: 10px 0; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px; box-sizing: border-box;}
+.input-container {
+    width: 90%; max-width: 500px;
+    text-align: center;
+    pointer-events: auto;
+}
 
-.wish-selector-list { max-height: 150px; overflow-y: auto; margin: 10px 0; border: 1px dashed #D4AF37; background: #000; }
-.selector-item { padding: 10px; font-size: 12px; cursor: pointer; color: #ccc; border-bottom: 1px solid #222; }
-.selector-item.selected { background: #D4AF37; color: #000; font-weight: bold; }
+textarea {
+    width: 100%; height: 80px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #D4AF37;
+    color: white; border-radius: 10px;
+    padding: 10px; margin-bottom: 15px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
 
-#overlay { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: center; }
-.button-group { display: flex; gap: 15px; }
-button { padding: 12px 25px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; }
-.primary-btn { background: #D4AF37; color: #000; }
+.button-group { display: flex; gap: 10px; justify-content: center; }
+button {
+    padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold;
+}
+.primary-btn { background: #D4AF37; color: black; }
 .secondary-btn { background: transparent; color: #D4AF37; border: 1px solid #D4AF37; }
-.gold-btn { background: linear-gradient(to right, #BF953F, #FCF6BA); color: #000; }
-.cancel-btn { background: #333; color: #fff; }
-
-@media (max-width: 600px) {
-    .wish { font-size: 11px; padding: 5px 10px; }
-}

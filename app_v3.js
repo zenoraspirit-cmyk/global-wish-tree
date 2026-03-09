@@ -1,138 +1,55 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// !!! 请在这里替换为您真实的 Firebase 配置 !!!
 const firebaseConfig = {
-    apiKey: "在此处填入你的APIKEY",
-    authDomain: "在此处填入你的AUTHDOMAIN",
-    projectId: "在此处填入你的PROJECTID",
-    storageBucket: "在此处填入你的STORAGEBUCKET",
-    messagingSenderId: "在此处填入你的SENDERID",
-    appId: "在此处填入你的APPID"
+    apiKey: "在此填入你的APIKEY",
+    authDomain: "在此填入你的AUTHDOMAIN",
+    projectId: "在此填入你的PROJECTID",
+    storageBucket: "在此填入你的STORAGEBUCKET",
+    messagingSenderId: "在此填入你的SENDERID",
+    appId: "在此填入你的APPID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const wishesArea = document.getElementById("wish-display");
 
-const categoryColors = {
-    Wealth: "#FFD700", Love: "#FFB6C1", Marriage: "#FF69B4", Career: "#87CEEB",
-    Health: "#90EE90", Family: "#FFA07A", Success: "#DA70D6", "Good Luck": "#FFFFE0",
-    Dreams: "#E6E6FA", "Inner Peace": "#F0FFFF", Protection: "#B0C4DE", "Spiritual Growth": "#D8BFD8"
-};
-
-let allWishes = [];
-let selectedWishIdToRepay = null;
-
-window.closeModals = () => {
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    selectedWishIdToRepay = null;
-    document.getElementById("gratitudeBtn").disabled = true;
-};
-
-document.getElementById("openManifestModal").onclick = () => document.getElementById("manifestModal").style.display = "block";
-document.getElementById("openGratitudeModal").onclick = () => document.getElementById("gratitudeModal").style.display = "block";
-
-// 1. 许愿支付逻辑
+// 1. 提交许愿逻辑
 document.getElementById("manifestBtn").onclick = async () => {
-    const nick = document.getElementById("nickName").value.trim();
-    const cat = document.getElementById("wishCategory").value;
-    const content = document.getElementById("wishInput").value.trim();
-
-    if (!nick || !content) return alert("Please fill in all fields.");
-
-    const q = query(collection(db, "wishes"), where("nickname_lower", "==", nick.toLowerCase()));
-    const snap = await getDocs(q);
-    if (!snap.empty) return alert("This ID is already taken.");
-
-    // 直接跳转支付
-    window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
+    const text = document.getElementById("wishInput").value.trim();
+    if (!text) return alert("写下你的愿望再点击吧。");
 
     try {
         await addDoc(collection(db, "wishes"), {
-            nickname: nick, nickname_lower: nick.toLowerCase(),
-            category: cat, content: content,
-            time: new Date().toLocaleString(), isFulfilled: false,
-            posX: Math.random() * 80 + 10, posY: Math.random() * 60 + 10
+            content: text,
+            time: new Date(),
+            posX: Math.random() * 80 + 10,
+            posY: Math.random() * 60 + 10
         });
-    } catch (e) { console.error(e); }
-};
-
-// 2. 还愿选择逻辑
-document.getElementById("gratitudeIdentity").oninput = async (e) => {
-    const val = e.target.value.toLowerCase();
-    const list = document.getElementById("user-wishes-to-repay");
-    list.innerHTML = "";
-    if (val.length < 2) return;
-
-    const q = query(collection(db, "wishes"), where("nickname_lower", "==", val), where("isFulfilled", "==", false));
-    const snap = await getDocs(q);
-    
-    snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const item = document.createElement("div");
-        item.className = "selector-item";
-        item.innerText = `[${d.category}] ${d.time.split(',')[0]}: ${d.content.substring(0, 20)}...`;
-        item.onclick = () => {
-            document.querySelectorAll('.selector-item').forEach(el => el.classList.remove('selected'));
-            item.classList.add('selected');
-            selectedWishIdToRepay = docSnap.id;
-            document.getElementById("gratitudeBtn").disabled = false;
-        };
-        list.appendChild(item);
-    });
-};
-
-document.getElementById("gratitudeBtn").onclick = async () => {
-    const amount = document.getElementById("gratitudeAmount").value;
-    if (amount < 1) return alert("Min payment is $1");
-    
-    if (selectedWishIdToRepay) {
-        window.location.href = `https://www.paypal.me/ZenoraSpirit/${amount}`;
-        await updateDoc(doc(db, "wishes", selectedWishIdToRepay), { isFulfilled: true });
+        // 成功保存后跳转支付
+        window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
+    } catch (e) { 
+        console.error("Error: ", e);
+        alert("保存失败，请检查 Firebase 配置。");
     }
 };
 
-// 3. 渲染展示
-onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(40)), (snapshot) => {
-    allWishes = [];
-    snapshot.forEach(doc => allWishes.push({ id: doc.id, ...doc.data() }));
-    renderWishes(allWishes);
-});
-
-function renderWishes(wishes) {
-    wishesArea.innerHTML = "";
-    wishes.forEach(data => {
-        const tag = document.createElement("div");
-        tag.className = "wish " + (data.isFulfilled ? "fulfilled" : "");
-        tag.innerText = data.nickname;
-        tag.style.backgroundColor = categoryColors[data.category] || "#FFF";
-
-        const speed = (Math.random() * 2 + 3).toFixed(2) + "s";
-        tag.style.setProperty('--speed', speed);
-        tag.style.animation = `float ${speed} infinite ease-in-out`;
-
-        tag.style.left = data.posX + "%";
-        tag.style.top = data.posY + "%";
-        wishesArea.appendChild(tag);
-    });
-}
-
-// 4. 搜索
-document.getElementById("searchInput").oninput = (e) => {
-    const term = e.target.value.toLowerCase();
-    const dropdown = document.getElementById("search-results");
-    dropdown.innerHTML = "";
-    if (!term) { dropdown.style.display = "none"; return; }
-
-    const found = allWishes.filter(w => w.nickname_lower.includes(term));
-    if (found.length > 0) {
-        dropdown.style.display = "block";
-        found.forEach(w => {
-            const item = document.createElement("div");
-            item.className = "dropdown-item";
-            item.innerText = `${w.nickname} (${w.category})`;
-            item.onclick = () => alert(`Wish: ${w.content}\nStatus: ${w.isFulfilled?'Fulfilled':'Praying'}`);
-            dropdown.appendChild(item);
-        });
-    } else { dropdown.style.display = "none"; }
+// 2. 提交还愿逻辑
+document.getElementById("gratitudeBtn").onclick = () => {
+    window.location.href = "https://www.paypal.me/ZenoraSpirit";
 };
+
+// 3. 实时加载展示逻辑
+onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(50)), (snapshot) => {
+    wishesArea.innerHTML = "";
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        const wishTag = document.createElement("div");
+        wishTag.className = "wish";
+        wishTag.innerText = data.content;
+        wishTag.style.left = `${data.posX}%`;
+        wishTag.style.top = `${data.posY}%`;
+        wishesArea.appendChild(wishTag);
+    });
+});
