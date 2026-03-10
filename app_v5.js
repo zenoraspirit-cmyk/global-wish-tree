@@ -1,4 +1,4 @@
-// --- Firebase 配置 ---
+// --- Firebase 配置 (请确保这里的 ID 是你自己的) ---
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -8,66 +8,70 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
-// 安全初始化
+// 初始化
 let db = null;
 try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
 } catch (e) {
-    console.error("Database connection failed, using local mode.");
+    console.error("Firebase load failed.");
 }
 
 let wishes = [];
 let currentFulfillTarget = null;
 
-// 使用原生绑定确保点击有效
-window.onload = function() {
+// 确保 DOM 加载后绑定按钮，解决点击无效问题
+window.addEventListener('DOMContentLoaded', () => {
     const wishModal = document.getElementById("wishModal");
     const fulfillModal = document.getElementById("fulfillModal");
 
-    document.getElementById("btnMakeWish").onclick = function() {
+    // 我要许愿按钮
+    document.getElementById("btnMakeWish").onclick = () => {
         wishModal.style.display = "block";
         document.getElementById("paymentSection").classList.remove("hidden");
         document.getElementById("wishFormSection").classList.add("hidden");
     };
 
-    document.getElementById("btnFulfillWish").onclick = function() {
+    // 我要还愿按钮
+    document.getElementById("btnFulfillWish").onclick = () => {
         fulfillModal.style.display = "block";
         document.getElementById("searchFulfillSection").classList.remove("hidden");
         document.getElementById("fulfillActionSection").classList.add("hidden");
     };
 
+    // 关闭按钮
     document.getElementById("closeWish").onclick = () => wishModal.style.display = "none";
     document.getElementById("closeFulfill").onclick = () => fulfillModal.style.display = "none";
 
-    // 实时同步云端数据
+    // 实时监听云端：手机和电脑端永远同步
     if (db) {
         db.collection("global_wishes")
           .orderBy("createdAt", "desc")
-          .limit(50)
+          .limit(50) // 自动清理：只显示最新的 50 条，避免眼花缭乱
           .onSnapshot(snapshot => {
               wishes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
               renderWishes();
-          }, error => {
-              console.log("Database Sync Error: ", error.message);
+          }, err => {
+              console.error("Firestore error:", err);
           });
     }
-};
+});
 
-// 支付处理
+// 支付与跳转逻辑：修复链接打不开的问题
 function handlePayment(type) {
-    let url = (type === 'wish') ? "https://buy.stripe.com/xxx" : "https://paypal.me/yourid/";
+    // 替换为你的真实链接
+    let payURL = (type === 'wish') ? "https://buy.stripe.com/xxx" : "https://paypal.me/yourname/";
     
     if (type === 'fulfill') {
         const amt = document.getElementById('fulfillAmount').value;
-        if (!amt || amt <= 0) { alert("Please enter amount."); return; }
-        url += amt;
+        if (!amt || amt <= 0) return alert("Please enter amount.");
+        payURL += amt;
     }
 
-    // 真正跳转支付界面
-    window.open(url, '_blank');
+    // 强制新窗口打开支付
+    window.open(payURL, '_blank');
 
-    // 支付确认模拟
+    // 模拟成功确认
     setTimeout(() => {
         if (confirm("If payment is finished, click OK to continue.")) {
             if (type === 'wish') {
@@ -77,10 +81,10 @@ function handlePayment(type) {
                 finalizeFulfillment();
             }
         }
-    }, 1000);
+    }, 1500);
 }
 
-// 提交愿望
+// 提交愿望：数据永久保存
 async function submitWish() {
     const name = document.getElementById('userName').value.trim();
     const content = document.getElementById('wishContent').value.trim();
@@ -91,23 +95,21 @@ async function submitWish() {
     const pos = getSafePos();
     const data = {
         name, content, category: cat, status: 'Active',
-        x: pos.x, y: pos.y, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        x: pos.x, y: pos.y, 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
         if (db) {
             await db.collection("global_wishes").add(data);
-        } else {
-            wishes.push({...data, id: Date.now()});
-            renderWishes();
         }
         document.getElementById("wishModal").style.display = "none";
     } catch (err) {
-        alert("Action failed: " + err.message);
+        alert("Permission denied! Please check Firebase Rules.");
     }
 }
 
-// 渲染愿望标签
+// 渲染标签
 function renderWishes(data = null) {
     const canvas = document.getElementById('wish-canvas');
     canvas.innerHTML = '';
@@ -123,15 +125,17 @@ function renderWishes(data = null) {
     });
 }
 
-// 搜索逻辑
+// 模糊搜索逻辑
 function searchWishes() {
     const term = document.getElementById('searchInput').value.toLowerCase();
     if (!term) return renderWishes();
-    const filtered = wishes.filter(w => w.name.toLowerCase().includes(term) || w.content.toLowerCase().includes(term));
+    const filtered = wishes.filter(w => 
+        w.name.toLowerCase().includes(term) || w.content.toLowerCase().includes(term)
+    );
     renderWishes(filtered);
 }
 
-// 随机位置（防重叠）
+// 防重叠坐标计算
 function getSafePos() {
     let x, y, overlap;
     let tries = 0;
