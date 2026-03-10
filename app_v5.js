@@ -1,9 +1,29 @@
+// --- 必须要做的：替换为你的 Firebase 配置 ---
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const collectionName = "global_wishes";
+
 let wishes = [];
 let currentFulfillTarget = null;
 
 window.onload = () => {
-    // 初始渲染
-    renderWishes();
+    // 监听云端数据库：自动同步手机和电脑，且只取最新的 50 条
+    db.collection(collectionName)
+      .orderBy("createdAt", "desc")
+      .limit(50)
+      .onSnapshot((snapshot) => {
+          wishes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderWishes();
+      });
 
     const wishModal = document.getElementById("wishModal");
     const fulfillModal = document.getElementById("fulfillModal");
@@ -22,159 +42,118 @@ window.onload = () => {
 
     document.getElementById("closeWish").onclick = () => wishModal.style.display = "none";
     document.getElementById("closeFulfill").onclick = () => fulfillModal.style.display = "none";
-
-    window.onclick = (e) => {
-        if (e.target == wishModal) wishModal.style.display = "none";
-        if (e.target == fulfillModal) fulfillModal.style.display = "none";
-    };
 };
 
-// --- 1. 支付拦截逻辑 ---
-function handlePayment(type) {
-    const amount = type === 'wish' ? 1 : document.getElementById('fulfillAmount').value;
-    if (type === 'fulfill' && (!amount || amount <= 0)) {
-        alert("Please enter a valid amount.");
-        return;
+// --- 支付与跳转控制 ---
+function handlePayment(type, url) {
+    if (type === 'fulfill') {
+        const amt = document.getElementById('fulfillAmount').value;
+        if (!amt || amt <= 0) { alert("Please enter a donation amount."); return; }
+        url = url + amt; // 动态拼接 PayPal 金额
     }
 
-    // 真正的支付跳转应在此处对接 API (如 window.location.href = StripeLink)
-    // 此处为模拟流程
-    const success = confirm(`[PAYMENT GATEWAY] Total: $${amount}\n\nProceed with simulated payment?`);
-    
-    if (success) {
-        if (type === 'wish') {
-            // 只有支付成功才显示表单
-            document.getElementById("paymentSection").classList.add("hidden");
-            document.getElementById("wishFormSection").classList.remove("hidden");
-        } else {
-            // 只有支付成功才完成还愿变色
-            finalizeFulfillment();
+    // 1. 强制弹出支付页面
+    window.open(url, '_blank');
+
+    // 2. 模拟支付后解锁逻辑（你可以手动确认已付款）
+    setTimeout(() => {
+        if (confirm("Have you completed the payment? Click OK to proceed.")) {
+            if (type === 'wish') {
+                document.getElementById("paymentSection").classList.add("hidden");
+                document.getElementById("wishFormSection").classList.remove("hidden");
+            } else {
+                finalizeFulfillment();
+            }
         }
-    } else {
-        alert("Payment cancelled. You cannot proceed without payment.");
-    }
+    }, 1500);
 }
 
-function submitWish() {
+// --- 提交愿望到云端 ---
+async function submitWish() {
     const name = document.getElementById('userName').value.trim();
     const content = document.getElementById('wishContent').value.trim();
     const cat = document.getElementById('wishCategory').value;
 
-    if (!name || !content) {
-        alert("Name and Wish content are required.");
-        return;
-    }
+    if (!name || !content) { alert("Please fill in both name and wish."); return; }
 
-    const pos = getRandomNonOverlappingPos();
-    const newWish = {
-        id: Date.now(),
-        name: name,
-        content: content,
-        category: cat,
-        time: new Date().toLocaleString(),
-        status: 'Active',
-        x: pos.x,
-        y: pos.y
+    const pos = getSafePosition();
+    const data = {
+        name: name, content: content, category: cat,
+        status: 'Active', x: pos.x, y: pos.y,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        dateStr: new Date().toLocaleDateString()
     };
 
-    wishes.push(newWish);
-    renderWishes();
-    document.getElementById("wishModal").style.display = "none";
-    // 清空表单
-    document.getElementById('userName').value = "";
-    document.getElementById('wishContent').value = "";
+    try {
+        await db.collection(collectionName).add(data);
+        document.getElementById("wishModal").style.display = "none";
+        document.getElementById('userName').value = "";
+        document.getElementById('wishContent').value = "";
+    } catch (err) { alert("Error saving to cloud: " + err.message); }
 }
 
-// --- 2. 实时模糊搜索逻辑 ---
+// --- 搜索逻辑：支持包含所有关键字，清空恢复 ---
 function searchWishes() {
     const term = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!term) { renderWishes(); return; }
     
-    // 如果没有输入，显示所有
-    if (term === "") {
-        renderWishes();
-        return;
-    }
-
-    // 只要姓名或内容包含关键字就显示（不区分大小写）
     const filtered = wishes.filter(w => 
         w.name.toLowerCase().includes(term) || 
         w.content.toLowerCase().includes(term)
     );
-    
     renderWishes(filtered);
 }
 
-// --- 3. 标签防重叠逻辑 ---
-function getRandomNonOverlappingPos() {
-    let x, y, isOverlapping;
-    let attempts = 0;
-    const margin = 10; // 标签间距
-
+// --- 防重叠渲染逻辑 ---
+function getSafePosition() {
+    let x, y, overlap;
+    let tries = 0;
     do {
-        isOverlapping = false;
-        // 限制在屏幕 10% - 85% 范围内，避免贴边
+        overlap = false;
         x = Math.random() * 75 + 10;
         y = Math.random() * 60 + 15;
-
-        // 检查与现有愿望的距离
         for (let w of wishes) {
-            const dx = Math.abs(w.x - x);
-            const dy = Math.abs(w.y - y);
-            if (dx < 12 && dy < 6) { // 设定碰撞检测范围
-                isOverlapping = true;
-                break;
-            }
+            if (Math.abs(w.x - x) < 12 && Math.abs(w.y - y) < 6) { overlap = true; break; }
         }
-        attempts++;
-    } while (isOverlapping && attempts < 50); // 最多尝试50次找空位
-
+        tries++;
+    } while (overlap && tries < 30);
     return { x, y };
 }
 
-function renderWishes(dataToRender = null) {
+function renderWishes(data = null) {
     const canvas = document.getElementById('wish-canvas');
     canvas.innerHTML = '';
-    const list = dataToRender || wishes;
+    const list = data || wishes;
 
-    list.forEach(wish => {
+    list.forEach(w => {
         const div = document.createElement('div');
-        div.className = `wish-tag ${wish.category} ${wish.status === 'Fulfilled' ? 'fulfilled' : ''}`;
-        div.style.left = `${wish.x}%`;
-        div.style.top = `${wish.y}%`;
-        div.innerText = wish.name;
-
-        const tooltip = `Owner: ${wish.name}\nWish: ${wish.content}\nDate: ${wish.time}\nStatus: ${wish.status}`;
-        div.setAttribute('data-tooltip', tooltip);
-
+        div.className = `wish-tag ${w.category} ${w.status === 'Fulfilled' ? 'fulfilled' : ''}`;
+        div.style.left = `${w.x}%`;
+        div.style.top = `${w.y}%`;
+        div.innerText = w.name;
+        div.setAttribute('data-tooltip', `Owner: ${w.name}\nWish: ${w.content}\nDate: ${w.dateStr}\nStatus: ${w.status}`);
         canvas.appendChild(div);
     });
 }
 
+// --- 还愿逻辑 ---
 function findWishToFulfill() {
     const term = document.getElementById('searchFulfillName').value.toLowerCase().trim();
     const wish = wishes.find(w => w.name.toLowerCase() === term && w.status !== 'Fulfilled');
-
     if (wish) {
         currentFulfillTarget = wish;
-        document.getElementById('wishPreview').innerHTML = `
-            <strong>Target:</strong> ${wish.name}<br>
-            <strong>Wish:</strong> ${wish.content}
-        `;
+        document.getElementById('wishPreview').innerHTML = `<strong>Owner:</strong> ${wish.name}<br><strong>Wish:</strong> ${wish.content}`;
         document.getElementById('searchFulfillSection').classList.add('hidden');
         document.getElementById('fulfillActionSection').classList.remove('hidden');
-    } else {
-        alert("No active wish found for this name/email.");
-    }
+    } else { alert("Active wish not found."); }
 }
 
-function finalizeFulfillment() {
+async function finalizeFulfillment() {
     if (currentFulfillTarget) {
-        const idx = wishes.findIndex(w => w.id === currentFulfillTarget.id);
-        if (idx !== -1) {
-            wishes[idx].status = 'Fulfilled';
-            renderWishes();
+        try {
+            await db.collection(collectionName).doc(currentFulfillTarget.id).update({ status: 'Fulfilled' });
             document.getElementById("fulfillModal").style.display = "none";
-            alert("Thank you for fulfilling the wish! The tag is now golden.");
-        }
+            alert("Payment success! This wish is now golden.");
+        } catch (err) { console.error(err); }
     }
 }
