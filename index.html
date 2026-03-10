@@ -16,7 +16,7 @@
 
     <div class="top-nav">
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search keyword..." oninput="searchWishes()">
+            <input type="text" id="searchInput" placeholder="Search wishes..." oninput="searchWishes()">
             <button onclick="searchWishes()">Search</button>
         </div>
     </div>
@@ -34,12 +34,12 @@
             <h2>Make Your Wish</h2>
             <div id="paymentSection">
                 <p>A $1 donation is required to post your wish.</p>
-                <button onclick="handlePayment('wish')" class="pay-btn">Proceed to Payment ($1)</button>
+                <button onclick="handlePayment('wish')" class="pay-btn">Pay $1 via Stripe</button>
             </div>
             <div id="wishFormSection" class="hidden">
-                <p style="color:#2ecc71; margin-bottom:10px;">✓ Payment Confirmed!</p>
-                <input type="text" id="userName" placeholder="Your Name / Email">
-                <textarea id="wishContent" placeholder="Your heart's desire..."></textarea>
+                <p style="color:#2ecc71; margin-bottom:10px;">✓ Payment Verified</p>
+                <input type="text" id="userName" placeholder="Your Name">
+                <textarea id="wishContent" placeholder="Write your wish here..."></textarea>
                 <select id="wishCategory">
                     <option value="wealth">Wealth</option>
                     <option value="career">Career</option>
@@ -49,10 +49,8 @@
                     <option value="family">Family</option>
                     <option value="travel">Travel</option>
                     <option value="wisdom">Wisdom</option>
-                    <option value="peace">Peace</option>
-                    <option value="happiness">Happiness</option>
                 </select>
-                <button onclick="submitWish()" class="submit-btn">Post to the Tree</button>
+                <button onclick="submitWish()" class="submit-btn">Post Wish</button>
             </div>
         </div>
     </div>
@@ -60,16 +58,17 @@
     <div id="fulfillModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeFulfill">&times;</span>
-            <h2>Fulfill Your Wish</h2>
+            <h2>Fulfill a Wish</h2>
             <div id="searchFulfillSection">
-                <input type="text" id="searchFulfillName" placeholder="Enter Name/Email">
-                <button onclick="findWishToFulfill()" class="pay-btn">Find My Wish</button>
+                <p>Search by the wisher's name to fulfill it.</p>
+                <input type="text" id="searchFulfillName" placeholder="Enter Name">
+                <button onclick="findWishToFulfill()" class="pay-btn">Find Wish</button>
             </div>
             <div id="fulfillActionSection" class="hidden">
                 <div class="wish-preview" id="wishPreview"></div>
-                <p>Pay any amount to turn this wish GOLD.</p>
+                <p>Support this wish to turn it GOLD.</p>
                 <input type="number" id="fulfillAmount" placeholder="Amount ($)" min="0.01">
-                <button onclick="handlePayment('fulfill')" class="pay-btn">Pay & Fulfill</button>
+                <button onclick="handlePayment('fulfill')" class="pay-btn">Confirm Support</button>
             </div>
         </div>
     </div>

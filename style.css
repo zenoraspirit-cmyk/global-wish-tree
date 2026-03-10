@@ -7,27 +7,25 @@ body { font-family: 'Open Sans', sans-serif; background-color: #000; width: 100v
 .search-container button { padding: 10px; border-radius: 0 20px 20px 0; border: none; background: #f1c40f; font-weight: bold; cursor: pointer; }
 
 #wish-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
-.wish-tag { position: absolute; padding: 6px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.8); cursor: pointer; font-size: 13px; font-weight: bold; pointer-events: auto; animation: floatAnim 5s ease-in-out infinite; box-shadow: 0 4px 8px rgba(0,0,0,0.6); transition: opacity 0.3s; border-width: 1px; border-style: solid; }
+.wish-tag { position: absolute; padding: 6px 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.85); cursor: pointer; font-size: 13px; font-weight: bold; pointer-events: auto; animation: floatAnim 5s ease-in-out infinite; box-shadow: 0 4px 8px rgba(0,0,0,0.6); transition: opacity 0.3s; border-width: 1px; border-style: solid; }
 
-/* 12分类颜色 */
+/* 颜色分类 */
 .wealth { border-color: #ffd700; color: #ffd700; } .career { border-color: #3498db; color: #3498db; }
 .success { border-color: #e67e22; color: #e67e22; } .love { border-color: #e74c3c; color: #e74c3c; }
 .health { border-color: #2ecc71; color: #2ecc71; } .family { border-color: #9b59b6; color: #9b59b6; }
 .travel { border-color: #1abc9c; color: #1abc9c; } .wisdom { border-color: #bdc3c7; color: #bdc3c7; }
-.peace { border-color: #ecf0f1; color: #ecf0f1; } .happiness { border-color: #f1c40f; color: #f1c40f; }
-.courage { border-color: #95a5a6; color: #95a5a6; } .friendship { border-color: #ff9ff3; color: #ff9ff3; }
 
-.fulfilled { background: rgba(184, 134, 11, 0.9) !important; border: 2px solid #fff !important; color: #fff !important; animation: goldenGlow 1.5s infinite alternate !important; }
+.fulfilled { background: rgba(184, 134, 11, 0.95) !important; border: 2px solid #fff !important; color: #fff !important; animation: goldenGlow 1.5s infinite alternate !important; }
 @keyframes goldenGlow { from { box-shadow: 0 0 5px #ffd700; } to { box-shadow: 0 0 30px #ffd700, 0 0 50px #fff; } }
 @keyframes floatAnim { 0%, 100% { transform: translateY(0) rotate(-0.5deg); } 50% { transform: translateY(-10px) rotate(0.5deg); } }
 
 .bottom-controls { position: fixed; bottom: 30px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 200; }
 .main-btn { padding: 12px 20px; background: #f1c40f; border: none; border-radius: 25px; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
 
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-.modal-content { background: #111; margin: 15% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; border: 1px solid #f1c40f; text-align: center; color: #fff; position: relative; }
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); }
+.modal-content { background: #111; margin: 10% auto; padding: 25px; width: 90%; max-width: 400px; border-radius: 12px; border: 1px solid #f1c40f; text-align: center; color: #fff; position: relative; }
 input, textarea, select { width: 100%; margin: 8px 0; padding: 12px; background: #000; color: #fff; border: 1px solid #333; }
-.pay-btn, .submit-btn { width: 100%; padding: 14px; background: #f1c40f; font-weight: bold; cursor: pointer; border-radius: 6px; border: none; }
+.pay-btn, .submit-btn { width: 100%; padding: 14px; background: #f1c40f; font-weight: bold; cursor: pointer; border-radius: 6px; border: none; color: #000; }
 .close { position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 28px; color: #888; }
 .hidden { display: none; }
 .wish-preview { background: #222; padding: 10px; margin-bottom: 10px; text-align: left; border-left: 4px solid #f1c40f; font-size: 14px; }
