@@ -2,24 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Wish Tree</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Open+Sans:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="container">
-        <div id="wish-display"></div>
-        
-        <div id="overlay">
-            <div class="input-container">
-                <textarea id="wishInput" placeholder="Write your global wish here..."></textarea>
-                <div class="button-group">
-                    <button id="manifestBtn" class="primary-btn">Manifest ($1)</button>
-                    <button id="gratitudeBtn" class="secondary-btn">Fulfill (Any Amount)</button>
-                </div>
+
+    <div class="video-container">
+        <img src="https://global-wish-tree.vercel.app/image_a35d27.jpg" alt="Background" class="bg-media">
+    </div>
+
+    <div class="top-nav">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Name/Email...">
+            <button onclick="searchWishes()">Search</button>
+        </div>
+    </div>
+
+    <div id="wish-canvas"></div>
+
+    <div class="bottom-controls">
+        <button id="btnMakeWish" class="main-btn">I want to make a wish</button>
+        <button id="btnFulfillWish" class="main-btn">I want to fulfill a wish</button>
+    </div>
+
+    <div id="wishModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Make Your Wish</h2>
+            <div id="paymentSection">
+                <p>To post a wish, a $1 donation is required.</p>
+                <button onclick="handlePayment('wish')" class="pay-btn">Pay $1 & Continue</button>
+            </div>
+            <div id="wishFormSection" class="hidden">
+                <input type="text" id="userName" placeholder="Your Name, Nickname or Email" required>
+                <textarea id="wishContent" placeholder="Write your wish here..." required></textarea>
+                <select id="wishCategory">
+                    <option value="wealth">Wealth</option>
+                    <option value="career">Career</option>
+                    <option value="success">Success</option>
+                    <option value="love">Love</option>
+                    <option value="health">Health</option>
+                    <option value="family">Family</option>
+                    <option value="travel">Travel</option>
+                    <option value="wisdom">Wisdom</option>
+                    <option value="peace">Peace</option>
+                    <option value="happiness">Happiness</option>
+                    <option value="courage">Courage</option>
+                    <option value="friendship">Friendship</option>
+                </select>
+                <button onclick="submitWish()" class="submit-btn">Post Wish</button>
             </div>
         </div>
     </div>
-    <script type="module" src="app_v3.js"></script>
+
+    <div id="fulfillModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFulfill()">&times;</span>
+            <h2>Fulfill Your Wish</h2>
+            <div id="searchFulfillSection">
+                <input type="text" id="searchFulfillName" placeholder="Enter your Name/Email used for wish">
+                <button onclick="findWishToFulfill()" class="pay-btn">Find My Wish</button>
+            </div>
+            <div id="fulfillActionSection" class="hidden">
+                <div class="wish-preview" id="wishPreview"></div>
+                <p>Support with any amount to fulfill this wish.</p>
+                <input type="number" id="fulfillAmount" placeholder="Enter amount ($)" min="0.01" step="0.01">
+                <button onclick="handlePayment('fulfill')" class="pay-btn">Pay & Fulfill</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app_v5.js"></script>
 </body>
 </html>

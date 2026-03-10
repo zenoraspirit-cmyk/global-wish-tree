@@ -1,56 +1,149 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+let wishes = [];
+let currentFulfillTarget = null;
 
-// Firebase 身份证信息
-const firebaseConfig = {
-  apiKey: "AIzaSyB2Tcqf74vURDSFFOpDjJA0eMtIrl3lN-0",
-  authDomain: "wish-tree-b8dc9.firebaseapp.com",
-  projectId: "wish-tree-b8dc9",
-  storageBucket: "wish-tree-b8dc9.firebasestorage.app",
-  messagingSenderId: "1068406016994",
-  appId: "1:1068406016994:web:7123d046c73f23ab0f07bb",
-  measurementId: "G-0B9GX7M298"
-};
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => {
+    // In a real app, fetch from Firestore here
+    renderWishes();
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const wishesArea = document.getElementById("wish-display");
+    // Modal listeners
+    const wishModal = document.getElementById("wishModal");
+    const btnMakeWish = document.getElementById("btnMakeWish");
+    const spanClose = document.getElementsByClassName("close")[0];
 
-// 点击“Manifest”按钮：保存愿望并跳转支付 $1
-document.getElementById("manifestBtn").onclick = async () => {
-    const text = document.getElementById("wishInput").value;
-    if (!text.trim()) return alert("Please type your wish first.");
+    btnMakeWish.onclick = () => {
+        wishModal.style.display = "block";
+        document.getElementById("paymentSection").classList.remove("hidden");
+        document.getElementById("wishFormSection").classList.add("hidden");
+    };
+
+    spanClose.onclick = () => { wishModal.style.display = "none"; };
     
-    try {
-        await addDoc(collection(db, "wishes"), {
-            content: text,
-            time: new Date(),
-            posX: Math.random() * 70 + 15,
-            posY: Math.random() * 50 + 15
-        });
-        // 跳转到支付 1 美元页面
-        window.location.href = "https://www.paypal.me/ZenoraSpirit/1";
-    } catch (e) {
-        console.error("Database Error:", e);
-        alert("Submission failed. Please check Firebase rules.");
-    }
-};
-
-// 点击“Fulfill”按钮：跳转到随意金额支付页面
-document.getElementById("gratitudeBtn").onclick = () => {
-    window.location.href = "https://www.paypal.me/ZenoraSpirit";
-};
-
-// 实时获取数据库里的愿望并显示
-onSnapshot(query(collection(db, "wishes"), orderBy("time", "desc"), limit(40)), (snapshot) => {
-    wishesArea.innerHTML = "";
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        const wishTag = document.createElement("div");
-        wishTag.className = "wish";
-        wishTag.innerText = data.content;
-        wishTag.style.left = `${data.posX}%`;
-        wishTag.style.top = `${data.posY}%`;
-        wishesArea.appendChild(wishTag);
-    });
+    document.getElementById("btnFulfillWish").onclick = () => {
+        document.getElementById("fulfillModal").style.display = "block";
+    };
 });
+
+function handlePayment(type) {
+    // Simulation of payment trigger
+    const amount = type === 'wish' ? 1 : document.getElementById('fulfillAmount').value;
+    
+    if (type === 'fulfill' && (!amount || amount <= 0)) {
+        alert("Please enter a valid amount.");
+        return;
+    }
+
+    // This is where you trigger Stripe/PayPal
+    const success = confirm(`Redirecting to Payment Gateway for $${amount}... Click OK to simulate success.`);
+    
+    if (success) {
+        if (type === 'wish') {
+            document.getElementById("paymentSection").classList.add("hidden");
+            document.getElementById("wishFormSection").classList.remove("hidden");
+        } else {
+            finalizeFulfillment();
+        }
+    }
+}
+
+function submitWish() {
+    const name = document.getElementById('userName').value;
+    const content = document.getElementById('wishContent').value;
+    const cat = document.getElementById('wishCategory').value;
+
+    if (!name || !content) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    const newWish = {
+        id: Date.now(),
+        name: name,
+        content: content,
+        category: cat,
+        time: new Date().toLocaleString(),
+        status: 'Pending',
+        x: Math.random() * 80 + 10,
+        y: Math.random() * 60 + 10
+    };
+
+    wishes.push(newWish);
+    // Save to Firestore logic here
+    
+    renderWishes();
+    document.getElementById("wishModal").style.display = "none";
+    // Reset form
+    document.getElementById('userName').value = "";
+    document.getElementById('wishContent').value = "";
+}
+
+function renderWishes(filterData = null) {
+    const canvas = document.getElementById('wish-canvas');
+    canvas.innerHTML = '';
+    const dataToRender = filterData || wishes;
+
+    dataToRender.forEach(wish => {
+        const div = document.createElement('div');
+        div.className = `wish-tag ${wish.category} ${wish.status === 'Fulfilled' ? 'fulfilled' : ''}`;
+        div.style.left = `${wish.x}%`;
+        div.style.top = `${wish.y}%`;
+        div.innerText = wish.name;
+
+        // Tooltip Data
+        const tooltip = `Name: ${wish.name}\nWish: ${wish.content}\nTime: ${wish.time}\nStatus: ${wish.status}`;
+        div.setAttribute('data-tooltip', tooltip);
+
+        canvas.appendChild(div);
+    });
+}
+
+function searchWishes() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    if (!term) {
+        renderWishes();
+        return;
+    }
+    const filtered = wishes.filter(w => 
+        w.name.toLowerCase().includes(term) || 
+        w.content.toLowerCase().includes(term)
+    );
+    renderWishes(filtered);
+}
+
+function findWishToFulfill() {
+    const term = document.getElementById('searchFulfillName').value.toLowerCase();
+    const wish = wishes.find(w => w.name.toLowerCase() === term && w.status !== 'Fulfilled');
+
+    if (wish) {
+        currentFulfillTarget = wish;
+        document.getElementById('wishPreview').innerHTML = `
+            <strong>Name:</strong> ${wish.name}<br>
+            <strong>Wish:</strong> ${wish.content}<br>
+            <strong>Date:</strong> ${wish.time}
+        `;
+        document.getElementById('searchFulfillSection').classList.add('hidden');
+        document.getElementById('fulfillActionSection').classList.remove('hidden');
+    } else {
+        alert("No active wish found for this name/email.");
+    }
+}
+
+function finalizeFulfillment() {
+    if (currentFulfillTarget) {
+        const index = wishes.findIndex(w => w.id === currentFulfillTarget.id);
+        if (index !== -1) {
+            wishes[index].status = 'Fulfilled';
+            // Update Firestore logic here
+            renderWishes();
+            closeFulfill();
+            alert("Thank you! Your wish now glows with gold.");
+        }
+    }
+}
+
+function closeFulfill() {
+    document.getElementById("fulfillModal").style.display = "none";
+    document.getElementById('searchFulfillSection').classList.remove('hidden');
+    document.getElementById('fulfillActionSection').classList.add('hidden');
+    currentFulfillTarget = null;
+}
