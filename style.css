@@ -6,30 +6,26 @@
 
 body {
     font-family: 'Open Sans', sans-serif;
-    overflow: hidden;
     background-color: #000;
-    color: white;
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
+    position: relative;
 }
 
-/* Background */
-.video-container {
+/* 修正背景图 */
+.bg-layer {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
+    background: url('tree.png') no-repeat center center;
+    background-size: cover;
+    z-index: 1; /* 放在最底层 */
 }
 
-.bg-media {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Search Bar */
+/* 搜索栏 */
 .top-nav {
     position: fixed;
     top: 20px;
@@ -37,83 +33,88 @@ body {
     z-index: 100;
 }
 
+.search-container {
+    display: flex;
+}
+
 .search-container input {
-    padding: 8px 12px;
+    padding: 10px;
     border-radius: 20px 0 0 20px;
-    border: none;
+    border: 1px solid #f1c40f;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
     outline: none;
 }
 
 .search-container button {
-    padding: 8px 15px;
+    padding: 10px 15px;
     border-radius: 0 20px 20px 0;
     border: none;
     background: #f1c40f;
-    cursor: pointer;
     font-weight: bold;
+    cursor: pointer;
 }
 
-/* Wishes Styling */
+/* 愿望画布 */
 #wish-canvas {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 80vh;
+    height: 100%;
+    z-index: 10; /* 高于背景 */
+    pointer-events: none; /* 防止遮挡下方点击，内部标签会重新开启点击 */
 }
 
 .wish-tag {
     position: absolute;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.7); /* 确保文字在花哨背景下清晰 */
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
-    white-space: nowrap;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    pointer-events: auto; /* 开启标签点击 */
     animation: floatAnim 4s ease-in-out infinite;
-    transition: transform 0.3s;
-    background: rgba(0, 0, 0, 0.6); /* Semi-transparent background for readability */
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 .wish-tag:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 120%;
+    bottom: 130%;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0,0,0,0.9);
-    color: #fff;
+    color: #f1c40f;
     padding: 10px;
     border-radius: 5px;
     width: 200px;
-    white-space: normal;
-    z-index: 1000;
     font-size: 12px;
     border: 1px solid #f1c40f;
-    line-height: 1.4;
+    white-space: pre-wrap;
+    z-index: 1000;
 }
 
-/* Category Colors */
-.wealth { border-left: 5px solid #ffd700; color: #ffd700; }
-.career { border-left: 5px solid #3498db; color: #3498db; }
-.success { border-left: 5px solid #e67e22; color: #e67e22; }
-.love { border-left: 5px solid #e74c3c; color: #e74c3c; }
-.health { border-left: 5px solid #2ecc71; color: #2ecc71; }
-.family { border-left: 5px solid #9b59b6; color: #9b59b6; }
-.travel { border-left: 5px solid #1abc9c; color: #1abc9c; }
-.wisdom { border-left: 5px solid #34495e; color: #34495e; }
-.peace { border-left: 5px solid #ecf0f1; color: #ecf0f1; }
-.happiness { border-left: 5px solid #f1c40f; color: #f1c40f; }
-.courage { border-left: 5px solid #7f8c8d; color: #7f8c8d; }
-.friendship { border-left: 5px solid #ff9ff3; color: #ff9ff3; }
+/* 12分类颜色 */
+.wealth { border: 1px solid #ffd700; color: #ffd700; }
+.career { border: 1px solid #3498db; color: #3498db; }
+.success { border: 1px solid #e67e22; color: #e67e22; }
+.love { border: 1px solid #e74c3c; color: #e74c3c; }
+.health { border: 1px solid #2ecc71; color: #2ecc71; }
+.family { border: 1px solid #9b59b6; color: #9b59b6; }
+.travel { border: 1px solid #1abc9c; color: #1abc9c; }
+.wisdom { border: 1px solid #bdc3c7; color: #bdc3c7; }
+.peace { border: 1px solid #ecf0f1; color: #ecf0f1; }
+.happiness { border: 1px solid #f1c40f; color: #f1c40f; }
+.courage { border: 1px solid #95a5a6; color: #95a5a6; }
+.friendship { border: 1px solid #ff9ff3; color: #ff9ff3; }
 
-/* Fulfilled Status (Golden Glow) */
+/* 还愿状态 (金色闪光) */
 .fulfilled {
     background: rgba(212, 175, 55, 0.8) !important;
-    border: 2px solid #fff;
-    color: #fff !important;
-    box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
+    border: 2px solid #fff !important;
+    color: #000 !important;
     animation: goldenGlow 2s infinite alternate !important;
 }
 
@@ -123,90 +124,55 @@ body {
 }
 
 @keyframes floatAnim {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(2deg); }
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-15px) rotate(1deg); }
 }
 
-/* Bottom Controls */
+/* 底部按钮 */
 .bottom-controls {
     position: fixed;
-    bottom: 50px;
+    bottom: 40px;
     width: 100%;
     display: flex;
     justify-content: center;
     gap: 20px;
+    z-index: 100;
 }
 
 .main-btn {
     padding: 15px 30px;
-    background: rgba(241, 196, 15, 0.8);
+    background: #f1c40f;
     border: none;
     border-radius: 30px;
     font-family: 'Cinzel', serif;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
 }
 
-.main-btn:hover { background: #f1c40f; transform: scale(1.05); }
-
-/* Modals */
+/* 弹窗样式 */
 .modal {
     display: none;
     position: fixed;
-    z-index: 1001;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8);
 }
 
 .modal-content {
-    background: #222;
+    background: #1a1a1a;
     margin: 10% auto;
     padding: 30px;
     width: 90%;
-    max-width: 500px;
+    max-width: 450px;
     border-radius: 15px;
-    text-align: center;
     border: 1px solid #f1c40f;
+    text-align: center;
+    color: #fff;
 }
 
 .hidden { display: none; }
+input, textarea, select { width: 100%; margin: 10px 0; padding: 12px; background: #000; color: #fff; border: 1px solid #444; }
+.pay-btn, .submit-btn { width: 100%; padding: 12px; background: #f1c40f; font-weight: bold; cursor: pointer; border-radius: 5px; border: none; margin-top: 10px; }
+.close { float: right; cursor: pointer; font-size: 28px; }
 
-input, textarea, select {
-    width: 100%;
-    margin: 10px 0;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #444;
-    background: #111;
-    color: white;
-}
-
-.pay-btn, .submit-btn {
-    width: 100%;
-    padding: 12px;
-    background: #f1c40f;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.wish-preview {
-    background: #333;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    text-align: left;
-}
-
-/* Mobile Adjustments */
-@media (max-width: 600px) {
-    .main-btn { padding: 10px 15px; font-size: 12px; }
-    .top-nav { right: 10px; left: 10px; }
-    .search-container { display: flex; }
-    .search-container input { flex: 1; }
-}
+.wish-preview { background: #222; padding: 15px; margin-bottom: 10px; text-align: left; border-left: 4px solid #f1c40f; }

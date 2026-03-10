@@ -9,13 +9,11 @@
 </head>
 <body>
 
-    <div class="video-container">
-        <img src="https://global-wish-tree.vercel.app/image_a35d27.jpg" alt="Background" class="bg-media">
-    </div>
+    <div class="bg-layer"></div>
 
     <div class="top-nav">
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search by Name/Email...">
+            <input type="text" id="searchInput" placeholder="Search Name/Email...">
             <button onclick="searchWishes()">Search</button>
         </div>
     </div>
@@ -29,15 +27,15 @@
 
     <div id="wishModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modalTitle">Make Your Wish</h2>
+            <span class="close" id="closeWish">&times;</span>
+            <h2>Make Your Wish</h2>
             <div id="paymentSection">
                 <p>To post a wish, a $1 donation is required.</p>
                 <button onclick="handlePayment('wish')" class="pay-btn">Pay $1 & Continue</button>
             </div>
             <div id="wishFormSection" class="hidden">
-                <input type="text" id="userName" placeholder="Your Name, Nickname or Email" required>
-                <textarea id="wishContent" placeholder="Write your wish here..." required></textarea>
+                <input type="text" id="userName" placeholder="Your Name, Nickname or Email">
+                <textarea id="wishContent" placeholder="Write your wish here..."></textarea>
                 <select id="wishCategory">
                     <option value="wealth">Wealth</option>
                     <option value="career">Career</option>
@@ -59,10 +57,10 @@
 
     <div id="fulfillModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeFulfill()">&times;</span>
+            <span class="close" id="closeFulfill">&times;</span>
             <h2>Fulfill Your Wish</h2>
             <div id="searchFulfillSection">
-                <input type="text" id="searchFulfillName" placeholder="Enter your Name/Email used for wish">
+                <input type="text" id="searchFulfillName" placeholder="Enter your Name/Email">
                 <button onclick="findWishToFulfill()" class="pay-btn">Find My Wish</button>
             </div>
             <div id="fulfillActionSection" class="hidden">
