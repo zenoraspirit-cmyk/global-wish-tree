@@ -34,12 +34,12 @@
             <h2>Make Your Wish</h2>
             <div id="paymentSection">
                 <p>A $1 donation is required to post your wish.</p>
-                <button onclick="handlePayment('wish')" class="pay-btn">Pay $1 & Continue</button>
+                <button onclick="handlePayment('wish')" class="pay-btn">Proceed to Payment ($1)</button>
             </div>
             <div id="wishFormSection" class="hidden">
-                <p style="color:#2ecc71; margin-bottom:10px;">✓ Payment Successful!</p>
+                <p style="color:#2ecc71; margin-bottom:10px;">✓ Payment Confirmed!</p>
                 <input type="text" id="userName" placeholder="Your Name / Email">
-                <textarea id="wishContent" placeholder="Write your heart's desire..."></textarea>
+                <textarea id="wishContent" placeholder="Your heart's desire..."></textarea>
                 <select id="wishCategory">
                     <option value="wealth">Wealth</option>
                     <option value="career">Career</option>
@@ -51,8 +51,6 @@
                     <option value="wisdom">Wisdom</option>
                     <option value="peace">Peace</option>
                     <option value="happiness">Happiness</option>
-                    <option value="courage">Courage</option>
-                    <option value="friendship">Friendship</option>
                 </select>
                 <button onclick="submitWish()" class="submit-btn">Post to the Tree</button>
             </div>
@@ -71,7 +69,7 @@
                 <div class="wish-preview" id="wishPreview"></div>
                 <p>Pay any amount to turn this wish GOLD.</p>
                 <input type="number" id="fulfillAmount" placeholder="Amount ($)" min="0.01">
-                <button onclick="handlePayment('fulfill')" class="pay-btn">Pay & Fulfill Now</button>
+                <button onclick="handlePayment('fulfill')" class="pay-btn">Pay & Fulfill</button>
             </div>
         </div>
     </div>

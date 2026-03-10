@@ -1,6 +1,6 @@
-// --- 核心配置 ---
+// --- Firebase 配置 ---
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // 请务必替换
+    apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
     projectId: "YOUR_PROJECT_ID",
     storageBucket: "YOUR_PROJECT.appspot.com",
@@ -8,76 +8,68 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
-// 尝试初始化 Firebase
+// 安全初始化
 let db = null;
 try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
 } catch (e) {
-    console.error("Firebase initialization failed, running in local mode.");
+    console.error("Database connection failed, using local mode.");
 }
 
 let wishes = [];
 let currentFulfillTarget = null;
 
-// --- 解决按钮点击无反应的关键：确保 DOM 加载后绑定 ---
-document.addEventListener('DOMContentLoaded', () => {
+// 使用原生绑定确保点击有效
+window.onload = function() {
     const wishModal = document.getElementById("wishModal");
     const fulfillModal = document.getElementById("fulfillModal");
-    const btnMakeWish = document.getElementById("btnMakeWish");
-    const btnFulfillWish = document.getElementById("btnFulfillWish");
 
-    // 绑定许愿按钮
-    btnMakeWish.addEventListener('click', () => {
+    document.getElementById("btnMakeWish").onclick = function() {
         wishModal.style.display = "block";
         document.getElementById("paymentSection").classList.remove("hidden");
         document.getElementById("wishFormSection").classList.add("hidden");
-    });
+    };
 
-    // 绑定还愿按钮
-    btnFulfillWish.addEventListener('click', () => {
+    document.getElementById("btnFulfillWish").onclick = function() {
         fulfillModal.style.display = "block";
         document.getElementById("searchFulfillSection").classList.remove("hidden");
         document.getElementById("fulfillActionSection").classList.add("hidden");
-    });
+    };
 
-    // 绑定关闭按钮
     document.getElementById("closeWish").onclick = () => wishModal.style.display = "none";
     document.getElementById("closeFulfill").onclick = () => fulfillModal.style.display = "none";
 
-    // 点击外部关闭
-    window.onclick = (e) => {
-        if (e.target == wishModal) wishModal.style.display = "none";
-        if (e.target == fulfillModal) fulfillModal.style.display = "none";
-    };
-
-    // 从数据库读取数据（同步手机/电脑）
+    // 实时同步云端数据
     if (db) {
-        db.collection("wishes").orderBy("createdAt", "desc").limit(50)
-        .onSnapshot((snapshot) => {
-            wishes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderWishes();
-        });
+        db.collection("global_wishes")
+          .orderBy("createdAt", "desc")
+          .limit(50)
+          .onSnapshot(snapshot => {
+              wishes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+              renderWishes();
+          }, error => {
+              console.log("Database Sync Error: ", error.message);
+          });
     }
-});
+};
 
-// --- 支付跳转逻辑 ---
+// 支付处理
 function handlePayment(type) {
-    // 这里填入你的真实收款链接
-    let payLink = (type === 'wish') ? "https://buy.stripe.com/xxx" : "https://paypal.me/yourid/";
+    let url = (type === 'wish') ? "https://buy.stripe.com/xxx" : "https://paypal.me/yourid/";
     
     if (type === 'fulfill') {
         const amt = document.getElementById('fulfillAmount').value;
         if (!amt || amt <= 0) { alert("Please enter amount."); return; }
-        payLink += amt;
+        url += amt;
     }
 
-    // 真正跳转
-    window.open(payLink, '_blank');
+    // 真正跳转支付界面
+    window.open(url, '_blank');
 
-    // 模拟成功后的确认
+    // 支付确认模拟
     setTimeout(() => {
-        if (confirm("Have you completed the payment? Click OK to continue.")) {
+        if (confirm("If payment is finished, click OK to continue.")) {
             if (type === 'wish') {
                 document.getElementById("paymentSection").classList.add("hidden");
                 document.getElementById("wishFormSection").classList.remove("hidden");
@@ -88,23 +80,13 @@ function handlePayment(type) {
     }, 1000);
 }
 
-// --- 搜索逻辑 ---
-function searchWishes() {
-    const term = document.getElementById('searchInput').value.toLowerCase().trim();
-    if (!term) { renderWishes(); return; }
-    const filtered = wishes.filter(w => 
-        w.name.toLowerCase().includes(term) || w.content.toLowerCase().includes(term)
-    );
-    renderWishes(filtered);
-}
-
-// --- 提交愿望 ---
+// 提交愿望
 async function submitWish() {
     const name = document.getElementById('userName').value.trim();
     const content = document.getElementById('wishContent').value.trim();
     const cat = document.getElementById('wishCategory').value;
 
-    if (!name || !content) { alert("Fields required."); return; }
+    if (!name || !content) return alert("Please fill all fields.");
 
     const pos = getSafePos();
     const data = {
@@ -112,16 +94,44 @@ async function submitWish() {
         x: pos.x, y: pos.y, createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    if (db) {
-        await db.collection("wishes").add(data);
-    } else {
-        wishes.push({ ...data, id: Date.now() });
-        renderWishes();
+    try {
+        if (db) {
+            await db.collection("global_wishes").add(data);
+        } else {
+            wishes.push({...data, id: Date.now()});
+            renderWishes();
+        }
+        document.getElementById("wishModal").style.display = "none";
+    } catch (err) {
+        alert("Action failed: " + err.message);
     }
-    document.getElementById("wishModal").style.display = "none";
 }
 
-// --- 防重叠渲染 ---
+// 渲染愿望标签
+function renderWishes(data = null) {
+    const canvas = document.getElementById('wish-canvas');
+    canvas.innerHTML = '';
+    const list = data || wishes;
+    list.forEach(w => {
+        const div = document.createElement('div');
+        div.className = `wish-tag ${w.category} ${w.status === 'Fulfilled' ? 'fulfilled' : ''}`;
+        div.style.left = w.x + '%';
+        div.style.top = w.y + '%';
+        div.innerText = w.name;
+        div.setAttribute('data-tooltip', `Wish: ${w.content}`);
+        canvas.appendChild(div);
+    });
+}
+
+// 搜索逻辑
+function searchWishes() {
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    if (!term) return renderWishes();
+    const filtered = wishes.filter(w => w.name.toLowerCase().includes(term) || w.content.toLowerCase().includes(term));
+    renderWishes(filtered);
+}
+
+// 随机位置（防重叠）
 function getSafePos() {
     let x, y, overlap;
     let tries = 0;
@@ -137,35 +147,23 @@ function getSafePos() {
     return { x, y };
 }
 
-function renderWishes(data = null) {
-    const canvas = document.getElementById('wish-canvas');
-    canvas.innerHTML = '';
-    const list = data || wishes;
-    list.forEach(w => {
-        const div = document.createElement('div');
-        div.className = `wish-tag ${w.category} ${w.status === 'Fulfilled' ? 'fulfilled' : ''}`;
-        div.style.left = `${w.x}%`;
-        div.style.top = `${w.y}%`;
-        div.innerText = w.name;
-        div.setAttribute('data-tooltip', `Owner: ${w.name}\nWish: ${w.content}`);
-        canvas.appendChild(div);
-    });
-}
-
+// 查找还愿目标
 function findWishToFulfill() {
     const term = document.getElementById('searchFulfillName').value.toLowerCase().trim();
-    const wish = wishes.find(w => w.name.toLowerCase() === term && w.status !== 'Fulfilled');
-    if (wish) {
-        currentFulfillTarget = wish;
-        document.getElementById('wishPreview').innerHTML = `<strong>Owner:</strong> ${wish.name}<br><strong>Wish:</strong> ${wish.content}`;
+    const target = wishes.find(w => w.name.toLowerCase() === term && w.status !== 'Fulfilled');
+    if (target) {
+        currentFulfillTarget = target;
+        document.getElementById('wishPreview').innerHTML = `<b>Target:</b> ${target.name}<br><b>Wish:</b> ${target.content}`;
         document.getElementById('searchFulfillSection').classList.add('hidden');
         document.getElementById('fulfillActionSection').classList.remove('hidden');
-    } else { alert("Wish not found."); }
+    } else {
+        alert("No active wish found.");
+    }
 }
 
 async function finalizeFulfillment() {
     if (currentFulfillTarget && db) {
-        await db.collection("wishes").doc(currentFulfillTarget.id).update({ status: 'Fulfilled' });
+        await db.collection("global_wishes").doc(currentFulfillTarget.id).update({ status: 'Fulfilled' });
     }
     document.getElementById("fulfillModal").style.display = "none";
 }
