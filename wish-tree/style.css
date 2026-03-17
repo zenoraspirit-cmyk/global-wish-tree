@@ -1,0 +1,23 @@
+
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: white; font-family: 'Arial', sans-serif; }
+#container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+#ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+#ui-layer * { pointer-events: auto; }
+
+/* 右上角人数统计 */
+.wish-counter { position: absolute; top: 30px; right: 30px; font-size: 18px; font-weight: bold; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5); background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,215,0,0.3); }
+
+.bottom-controls { position: absolute; bottom: 50px; width: 100%; display: flex; justify-content: center; }
+.main-btn { padding: 18px 60px; font-size: 18px; border-radius: 50px; border: 2px solid #ffd700; cursor: pointer; color: #ffd700; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); transition: 0.3s; font-weight: bold; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+.main-btn:hover { background: #ffd700; color: #000; }
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.hidden { display: none !important; }
+.modal-content { background: #08080c; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 340px; text-align: center; }
+.gold-border { border: 2px solid #ffd700; box-shadow: 0 0 40px rgba(255,215,0,0.2); }
+
+.gold-btn { background: #ffd700; color: black; font-weight: bold; padding: 15px; border-radius: 12px; border: none; cursor: pointer; width: 100%; margin-top: 15px; }
+.close-modal-btn { background: none; border: none; color: #666; cursor: pointer; margin-top: 12px; text-decoration: underline; }
+
+input, textarea, select { width: 100%; background: #151515; border: 1px solid #333; color: white; padding: 12px; margin-bottom: 12px; border-radius: 8px; outline: none; }
+.detail-box { text-align: left; font-size: 14px; line-height: 2; margin: 20px 0; border-top: 1px solid #222; padding-top: 15px; }

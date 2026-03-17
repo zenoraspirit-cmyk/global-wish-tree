@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Wish Tree | Zenora Spirit</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-layer">
+        <div class="wish-counter">
+            Wishes: <span id="counter-num">2000</span>+
+        </div>
+
+        <div class="bottom-controls">
+            <button id="make-wish-btn" class="main-btn">I want to Wish</button>
+        </div>
+    </div>
+
+    <div id="wish-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Make Your Wish</h3>
+            <input type="text" id="wish-nickname" placeholder="Your Nickname" data-gramm="false">
+            <select id="wish-type">
+                <option value="Health">Health</option><option value="Wealth">Wealth</option>
+                <option value="Love">Love</option><option value="Career">Career</option>
+                <option value="Study">Study</option><option value="Family">Family</option>
+                <option value="Peace">Peace</option><option value="Luck">Luck</option>
+                <option value="Travel">Travel</option><option value="General">General</option>
+            </select>
+            <textarea id="wish-content" placeholder="Write your heart's desire..." data-gramm="false"></textarea>
+            <button id="submit-wish-action" class="gold-btn">Submit Wish</button>
+            <button class="close-modal-btn">Cancel</button>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-content gold-border">
+            <h3>Wish Details</h3>
+            <div id="detail-body" class="detail-box"></div>
+            <button id="detail-close-btn" class="gold-btn">Confirm & Close</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <source src="bg-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="container"></div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
